@@ -1,0 +1,48 @@
+rules_version = '2';
+
+// Reglas de ejemplo para Firestore, alineadas con la Matriz de Permisos
+// (sección 2 del documento de especificación). Ajusta según tus necesidades
+// reales antes de ir a producción. Cópialas en la consola de Firebase:
+// Firestore Database > Reglas.
+
+function estaAutenticado() {
+  return request.auth != null;
+}
+
+function rolDelUsuario() {
+  return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.rol;
+}
+
+function esAdmin() {
+  return estaAutenticado() && rolDelUsuario() == 'ADMINISTRADOR';
+}
+
+function esProfesor() {
+  return estaAutenticado() && rolDelUsuario() == 'PROFESOR';
+}
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /usuarios/{uid} {
+      allow read: if estaAutenticado();
+      allow write: if estaAutenticado() && request.auth.uid == uid || esAdmin();
+    }
+
+    match /eventos/{eventoId} {
+      allow read: if estaAutenticado();
+      allow write: if esAdmin();
+    }
+
+    match /avisos/{avisoId} {
+      allow read: if estaAutenticado();
+      allow create: if esAdmin() || esProfesor();
+      allow update, delete: if esAdmin();
+    }
+
+    match /presencia/{profesorUid} {
+      allow read: if estaAutenticado();
+      allow write: if estaAutenticado() && request.auth.uid == profesorUid;
+    }
+  }
+}

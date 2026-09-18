@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Aulas Sin Fronteras</string>
+    <string name="default_notification_channel_id">canal_urgente</string>
+
+    <string name="canal_noticias_id">canal_noticias</string>
+    <string name="canal_noticias_nombre">Noticias</string>
+    <string name="canal_cambios_aula_id">canal_cambios_aula</string>
+    <string name="canal_cambios_aula_nombre">Cambios de Aula</string>
+    <string name="canal_urgente_nombre">Urgente</string>
+</resources>
