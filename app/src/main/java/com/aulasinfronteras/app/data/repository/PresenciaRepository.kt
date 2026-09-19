@@ -67,13 +67,13 @@ class PresenciaRepository @Inject constructor(
 
     /** Observa la presencia de todos los profesores de una lista de materias del alumno. */
     fun observarPresenciaPorMaterias(materiaIds: List<String>): Flow<List<Presencia>> = callbackFlow {
-        if (materiaIds.isEmpty()) {
-            trySend(emptyList())
-            awaitClose { }
-            return@callbackFlow
+        val consulta = if (materiaIds.isEmpty()) {
+            coleccion // Ver todos si no tiene materias asignadas aún
+        } else {
+            coleccion.whereIn("materiaId", materiaIds.take(30))
         }
-        val registro = coleccion
-            .whereIn("materiaId", materiaIds.take(30))
+        
+        val registro = consulta
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     close(error)

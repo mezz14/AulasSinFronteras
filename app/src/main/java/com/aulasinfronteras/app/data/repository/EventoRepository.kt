@@ -37,14 +37,11 @@ class EventoRepository @Inject constructor(
 
     /** Eventos filtrados por una lista de materias (uso típico: Alumno/Profesor). */
     fun observarPorMaterias(materiaIds: List<String>): Flow<List<Evento>> = callbackFlow {
-        if (materiaIds.isEmpty()) {
-            trySend(emptyList())
-            awaitClose { }
-            return@callbackFlow
-        }
-        // Firestore permite hasta 30 valores en whereIn.
+        // Siempre incluimos los eventos institucionales (materiaId vacía)
+        val idsParaConsulta = (materiaIds + "").distinct().take(30)
+
         val registro = coleccion
-            .whereIn("materiaId", materiaIds.take(30))
+            .whereIn("materiaId", idsParaConsulta)
             .orderBy("fechaInicio", Query.Direction.ASCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {

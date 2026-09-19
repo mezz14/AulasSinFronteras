@@ -42,13 +42,11 @@ class AvisoRepository @Inject constructor(
     }
 
     fun observarAvisosPorMaterias(materiaIds: List<String>): Flow<List<Aviso>> = callbackFlow {
-        if (materiaIds.isEmpty()) {
-            trySend(emptyList())
-            awaitClose { }
-            return@callbackFlow
-        }
+        // Incluimos "" para ver siempre los institucionales
+        val idsParaConsulta = (materiaIds + "").distinct().take(30)
+        
         val registro = coleccion
-            .whereIn("materiaId", materiaIds.take(30))
+            .whereIn("materiaId", idsParaConsulta)
             .orderBy("fechaCreacion", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {

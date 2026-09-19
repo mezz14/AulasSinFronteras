@@ -36,12 +36,15 @@ class AvisosViewModel @Inject constructor(
     fun inicializar(usuario: Usuario) {
         viewModelScope.launch {
             avisoRepository.suscribirseACanalesGenerales()
-            val flujo = if (usuario.isAdmin) {
-                avisoRepository.observarAvisosInstitucionales()
-            } else if (usuario.isTeacher) {
-                avisoRepository.observarAvisosPorMaterias(usuario.materiasImpartidas)
-            } else {
-                avisoRepository.observarAvisosPorMaterias(usuario.materiasMatriculadas)
+            val flujo = when {
+                usuario.isAdmin -> avisoRepository.observarAvisosInstitucionales()
+                usuario.isTeacher -> {
+                    // El profesor ve institucionales, los de sus materias Y los que él mismo creó
+                    // Para simplificar y asegurar visibilidad, usamos observarAvisosPorMaterias
+                    // pero si la lista es vacía, el repo ya asegura ver los institucionales.
+                    avisoRepository.observarAvisosPorMaterias(usuario.materiasImpartidas)
+                }
+                else -> avisoRepository.observarAvisosPorMaterias(usuario.materiasMatriculadas)
             }
             flujo.collect { avisos -> _uiState.value = _uiState.value.copy(avisos = avisos) }
         }

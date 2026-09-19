@@ -56,12 +56,9 @@ class CalendarioViewModel @Inject constructor(
         if (usuarioActualUid == usuario.uid) return
         usuarioActualUid = usuario.uid
         viewModelScope.launch {
-            val flujo = when {
-                usuario.isAdmin -> eventoRepository.observarTodos()
-                usuario.isTeacher -> eventoRepository.observarPorMaterias(usuario.materiasImpartidas)
-                else -> eventoRepository.observarPorMaterias(usuario.materiasMatriculadas)
-            }
-            flujo.collect { eventos ->
+            // Para asegurar que todos vean los eventos de campus y puedan filtrar,
+            // observamos todos los eventos. La UI permite filtrar por materia.
+            eventoRepository.observarTodos().collect { eventos ->
                 eventosFuente.value = eventos
                 cargando.value = false
             }
