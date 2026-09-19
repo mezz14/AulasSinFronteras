@@ -46,7 +46,12 @@ class AvisosViewModel @Inject constructor(
                 }
                 else -> avisoRepository.observarAvisosPorMaterias(usuario.materiasMatriculadas)
             }
-            flujo.collect { avisos -> _uiState.value = _uiState.value.copy(avisos = avisos) }
+            try {
+                flujo.collect { avisos -> _uiState.value = _uiState.value.copy(avisos = avisos) }
+            } catch (e: Exception) {
+                // Prevenir crash si falla el flujo (ej. error de red o permisos)
+                e.printStackTrace()
+            }
         }
     }
 

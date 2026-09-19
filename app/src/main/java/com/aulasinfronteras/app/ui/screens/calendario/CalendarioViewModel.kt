@@ -58,9 +58,13 @@ class CalendarioViewModel @Inject constructor(
         viewModelScope.launch {
             // Para asegurar que todos vean los eventos de campus y puedan filtrar,
             // observamos todos los eventos. La UI permite filtrar por materia.
-            eventoRepository.observarTodos().collect { eventos ->
-                eventosFuente.value = eventos
-                cargando.value = false
+            try {
+                eventoRepository.observarTodos().collect { eventos ->
+                    eventosFuente.value = eventos
+                    cargando.value = false
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }

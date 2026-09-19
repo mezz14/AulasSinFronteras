@@ -1,6 +1,7 @@
 package com.aulasinfronteras.app.data.model
 
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.DocumentId
 
 enum class CanalAviso {
     NOTICIAS,
@@ -22,6 +23,7 @@ enum class CanalAviso {
  * o de materia (creado por un Profesor).
  */
 data class Aviso(
+    @DocumentId
     val id: String = "",
     val titulo: String = "",
     val contenido: String = "",

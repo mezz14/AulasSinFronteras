@@ -3,7 +3,6 @@ package com.aulasinfronteras.app.data.repository
 import com.aulasinfronteras.app.data.model.Aviso
 import com.aulasinfronteras.app.data.model.CanalAviso
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -30,13 +29,14 @@ class AvisoRepository @Inject constructor(
     fun observarAvisosInstitucionales(): Flow<List<Aviso>> = callbackFlow {
         val registro = coleccion
             .whereEqualTo("materiaId", "")
-            .orderBy("fechaCreacion", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     close(error)
                     return@addSnapshotListener
                 }
-                trySend(snapshot?.toObjects(Aviso::class.java).orEmpty())
+                val lista = snapshot?.toObjects(Aviso::class.java).orEmpty()
+                    .sortedByDescending { it.fechaCreacion }
+                trySend(lista)
             }
         awaitClose { registro.remove() }
     }
@@ -47,13 +47,15 @@ class AvisoRepository @Inject constructor(
         
         val registro = coleccion
             .whereIn("materiaId", idsParaConsulta)
-            .orderBy("fechaCreacion", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     close(error)
                     return@addSnapshotListener
                 }
-                trySend(snapshot?.toObjects(Aviso::class.java).orEmpty())
+                // Ordenamos en memoria para evitar requerir un índice compuesto en Firestore
+                val lista = snapshot?.toObjects(Aviso::class.java).orEmpty()
+                    .sortedByDescending { it.fechaCreacion }
+                trySend(lista)
             }
         awaitClose { registro.remove() }
     }

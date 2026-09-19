@@ -2,7 +2,6 @@ package com.aulasinfronteras.app.data.repository
 
 import com.aulasinfronteras.app.data.model.Evento
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -24,13 +23,14 @@ class EventoRepository @Inject constructor(
     /** Todos los eventos, ordenados por fecha (uso típico: Administrador). */
     fun observarTodos(): Flow<List<Evento>> = callbackFlow {
         val registro = coleccion
-            .orderBy("fechaInicio", Query.Direction.ASCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     close(error)
                     return@addSnapshotListener
                 }
-                trySend(snapshot?.toObjects(Evento::class.java).orEmpty())
+                val lista = snapshot?.toObjects(Evento::class.java).orEmpty()
+                    .sortedBy { it.fechaInicio }
+                trySend(lista)
             }
         awaitClose { registro.remove() }
     }
@@ -42,13 +42,15 @@ class EventoRepository @Inject constructor(
 
         val registro = coleccion
             .whereIn("materiaId", idsParaConsulta)
-            .orderBy("fechaInicio", Query.Direction.ASCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     close(error)
                     return@addSnapshotListener
                 }
-                trySend(snapshot?.toObjects(Evento::class.java).orEmpty())
+                // Ordenamos en memoria para evitar requerir un índice compuesto en Firestore
+                val lista = snapshot?.toObjects(Evento::class.java).orEmpty()
+                    .sortedBy { it.fechaInicio }
+                trySend(lista)
             }
         awaitClose { registro.remove() }
     }
@@ -57,13 +59,14 @@ class EventoRepository @Inject constructor(
     fun observarPorMateria(materiaId: String): Flow<List<Evento>> = callbackFlow {
         val registro = coleccion
             .whereEqualTo("materiaId", materiaId)
-            .orderBy("fechaInicio", Query.Direction.ASCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     close(error)
                     return@addSnapshotListener
                 }
-                trySend(snapshot?.toObjects(Evento::class.java).orEmpty())
+                val lista = snapshot?.toObjects(Evento::class.java).orEmpty()
+                    .sortedBy { it.fechaInicio }
+                trySend(lista)
             }
         awaitClose { registro.remove() }
     }
