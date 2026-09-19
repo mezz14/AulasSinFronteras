@@ -10,18 +10,24 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.aulasinfronteras.app.data.model.RolUsuario
 import com.aulasinfronteras.app.data.model.Usuario
 
 /**
@@ -56,11 +62,19 @@ fun LoginScreen(
 
         Column(modifier = Modifier.padding(top = 32.dp)) {
             OutlinedTextField(
+                value = uiState.nombre,
+                onValueChange = viewModel::onNombreChange,
+                label = { Text("Nombre completo (para registro)") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
                 value = uiState.email,
                 onValueChange = viewModel::onEmailChange,
                 label = { Text("Correo institucional") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp)
             )
             OutlinedTextField(
                 value = uiState.password,
@@ -98,6 +112,26 @@ fun LoginScreen(
                     )
                 }
                 Text("Ingresar")
+            }
+
+            OutlinedButton(
+                onClick = { viewModel.registrar(RolUsuario.ALUMNO) },
+                enabled = !uiState.cargando,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+            ) {
+                Text("Registrar como Alumno")
+            }
+
+            OutlinedButton(
+                onClick = { viewModel.registrar(RolUsuario.PROFESOR) },
+                enabled = !uiState.cargando,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+            ) {
+                Text("Registrar como Profesor")
             }
         }
     }

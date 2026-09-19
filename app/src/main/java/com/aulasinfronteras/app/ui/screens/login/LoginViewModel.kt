@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class LoginUiState(
+    val nombre: String = "",
     val email: String = "",
     val password: String = "",
     val cargando: Boolean = false,
@@ -27,6 +28,10 @@ class LoginViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
+
+    fun onNombreChange(valor: String) {
+        _uiState.value = _uiState.value.copy(nombre = valor, error = null)
+    }
 
     fun onEmailChange(valor: String) {
         _uiState.value = _uiState.value.copy(email = valor, error = null)
@@ -57,16 +62,16 @@ class LoginViewModel @Inject constructor(
     }
 
     /** Registro rápido, usado principalmente en pruebas / alta de administrador inicial. */
-    fun registrar(nombre: String, rol: RolUsuario) {
+    fun registrar(rol: RolUsuario) {
         val estado = _uiState.value
-        if (estado.email.isBlank() || estado.password.isBlank() || nombre.isBlank()) {
+        if (estado.email.isBlank() || estado.password.isBlank() || estado.nombre.isBlank()) {
             _uiState.value = estado.copy(error = "Completa nombre, correo y contraseña")
             return
         }
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(cargando = true, error = null)
             val resultado = authRepository.registrarUsuario(
-                estado.email.trim(), estado.password, nombre.trim(), rol
+                estado.email.trim(), estado.password, estado.nombre.trim(), rol
             )
             resultado.onSuccess { usuario ->
                 _uiState.value = _uiState.value.copy(cargando = false, usuario = usuario)
